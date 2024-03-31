@@ -1,4 +1,5 @@
 <template>
+  <div>
   <Navbar current-page="3n"></Navbar>
   <div class="flex h-screen bg-center bg-no-repeat bg-cover bg-hero-pattern">
     <!-- <sponsorBanner1></sponsorBanner1> -->
@@ -45,6 +46,7 @@
     <footer class="absolute bottom-4 w-screen text-center">
       <span class="text-slate-800">&copy; <strong>UTCSSA</strong> - Junyu Yao and Tech Department, 2024.</span>
     </footer>
+  </div>
   </div>
 </template>
 

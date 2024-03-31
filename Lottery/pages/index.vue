@@ -16,6 +16,7 @@
         :target="dispNum1"
         @animation-start="loading = true"
         @animation-end="onAnimationEnd()"
+        @draw="drawSpecific(1)"
         />
         <DigitDisplay
         class="my-8"
@@ -43,6 +44,7 @@
           >
           {{ loading ? 'Loading...' : 'Draw' }}
           </button>
+          <button @click="saveNumbers">Save</button>
         </div>
       </div>
       <div class="center_column">
@@ -121,6 +123,33 @@ const draw = () => {
 
   loading.value = false;
 }
+
+// Save function
+const saveNumbers = async () => {
+  const numbersToSave = [dispNum.value, dispNum1.value, dispNum2.value, dispNum3.value, dispNum4.value]
+  try {
+    const response = await fetch('http://localhost:8080/api/save-numbers', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ numbers: numbersToSave }),
+    })
+    if (!response.ok) throw new Error('Failed to save numbers')
+    alert('Numbers saved successfully')
+  } catch (err) {
+    console.error(err)
+  }
+}
+
+const dispNumRefs = ref([dispNum1, dispNum2, dispNum3, dispNum4, dispNum]);
+
+const drawSpecific = (index: number) => {
+  loading.value = true;
+  const number = drawNumber();
+  dispNumRefs.value[index].value = number;
+  loading.value = false;
+};
 
 const { $confetti } = useNuxtApp().vueApp.config.globalProperties
 

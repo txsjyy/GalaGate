@@ -48,6 +48,14 @@ def get_lottery_numbers():
     # Return the list of lottery numbers
     return jsonify(lottery_numbers)
 
+@app.route('/api/save-numbers', methods=['POST'])
+def save_numbers():
+    data = request.json
+    numbers = data.get('numbers')
+    # Logic to save numbers, e.g., store them in a database or a file
+    print(numbers)  # Just for debugging, replace with your actual saving logic
+    return jsonify({'success': True, 'message': 'Numbers saved successfully'})
+
 # debug=True to avoid restart the local development server manually after each change to your code.
 # host='0.0.0.0' to make the server publicly available.
 if __name__ == "__main__":
