@@ -7,13 +7,14 @@ CORS(app)
 
 users = {
     'user1@example.com': {'lottery_number': 123, 'won': 'yes'},
-    'user2@example.com': {'lottery_number': 456, 'won': 'no'}
+    'user2@example.com': {'lottery_number': 456, 'won': 'no'},
+    'user3@example.com': {'lottery_number': 1, 'won': 'no'},
+    'user4@example.com': {'lottery_number': 2, 'won': 'no'},
+    'user5@example.com': {'lottery_number': 3, 'won': 'no'},
+    'user6@example.com': {'lottery_number': 4, 'won': 'no'},
+    'user7@example.com': {'lottery_number': 5, 'won': 'no'},
 }
 
-
-@app.route('/', methods=['GET'])
-def about():
-    return "hello world"
 
 @app.route('/api/checkin', methods=['POST'])
 def checkin():
@@ -39,6 +40,13 @@ def checkin():
         'won': won
     })
 
+@app.route('/api/lottery-numbers', methods=['GET'])
+def get_lottery_numbers():
+    # Extract lottery numbers excluding those with a won value of 'yes'
+    lottery_numbers = [user['lottery_number'] for user in users.values() if user['won'] != 'yes']
+
+    # Return the list of lottery numbers
+    return jsonify(lottery_numbers)
 
 # debug=True to avoid restart the local development server manually after each change to your code.
 # host='0.0.0.0' to make the server publicly available.
