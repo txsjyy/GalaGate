@@ -1,0 +1,26 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: example
+    ports:
+      - "5433:5433"
+
+  backend:
+    build: ./backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+
+  checkin:
+    build: ./checkin
+    ports:
+      - "3000:3000"
+
+  lottery:
+    build: ./lottery
+    ports:
+      - "3001:3001"

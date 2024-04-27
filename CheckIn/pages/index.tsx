@@ -8,11 +8,11 @@ export default function Home() {
     const [pressed, setPressed] = useState(false);
     const router = useRouter();
 
-    const handleChange = (e) => {
+    const handleChange = (e:any) => {
         setValue(e.target.value);
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e:any) => {
         e.preventDefault();
         setPressed(true);
 
