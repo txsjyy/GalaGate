@@ -1,0 +1,263 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum OrganizationRole {
+  OWNER
+  ADMIN
+  STAFF
+  VIEWER
+}
+
+enum EventStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
+
+enum CheckInSource {
+  STAFF_SEARCH
+  QR
+  MANUAL
+}
+
+enum RaffleDrawStatus {
+  PENDING
+  DRAWING
+  COMPLETED
+  CANCELLED
+}
+
+enum EventReportStatus {
+  DRAFT
+  SAVED
+  EXPORTED
+}
+
+enum AiGenerationFeature {
+  EVENT_RECAP_REPORT
+}
+
+enum AiGenerationStatus {
+  SUCCESS
+  FAILED
+}
+
+model User {
+  id                  String               @id @default(cuid())
+  name                String?
+  email               String               @unique
+  image               String?
+  organizationMembers OrganizationMember[]
+  checkInRecords      CheckInRecord[]      @relation("CheckInStaff")
+  raffleDraws         RaffleDraw[]         @relation("RaffleDrawCreator")
+  eventReports        EventReport[]        @relation("ReportGenerator")
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+}
+
+model Organization {
+  id        String               @id @default(cuid())
+  name      String
+  slug      String               @unique
+  members   OrganizationMember[]
+  events    Event[]
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+}
+
+model OrganizationMember {
+  id             String           @id @default(cuid())
+  organizationId String
+  userId         String
+  role           OrganizationRole @default(VIEWER)
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt      DateTime         @default(now())
+
+  @@unique([organizationId, userId])
+  @@index([userId])
+}
+
+model Event {
+  id             String            @id @default(cuid())
+  organizationId String
+  name           String
+  slug           String
+  description    String?
+  venue          String?
+  startsAt       DateTime
+  endsAt         DateTime?
+  timezone       String            @default("America/Chicago")
+  status         EventStatus       @default(DRAFT)
+  organization   Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  attendees      Attendee[]
+  checkIns       CheckInRecord[]
+  rafflePrizes   RafflePrize[]
+  raffleDraws    RaffleDraw[]
+  raffleWinners  RaffleWinner[]
+  sponsors       Sponsor[]
+  reports        EventReport[]
+  aiLogs         AiGenerationLog[]
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  @@unique([organizationId, slug])
+  @@index([organizationId])
+  @@index([status])
+}
+
+model Attendee {
+  id              String          @id @default(cuid())
+  eventId         String
+  fullName        String
+  email           String
+  phone           String?
+  ticketType      String          @default("General")
+  ticketCode      String?
+  lotteryNumber   Int?
+  lotteryEligible Boolean         @default(true)
+  notes           String?
+  event           Event           @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  checkInRecords  CheckInRecord[]
+  raffleWins      RaffleWinner[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@unique([eventId, email])
+  @@unique([eventId, ticketCode])
+  @@unique([eventId, lotteryNumber])
+  @@index([eventId, fullName])
+}
+
+model CheckInRecord {
+  id                String        @id @default(cuid())
+  eventId           String
+  attendeeId        String
+  checkedInByUserId String?
+  checkedInAt       DateTime      @default(now())
+  source            CheckInSource @default(STAFF_SEARCH)
+  event             Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  attendee          Attendee      @relation(fields: [attendeeId], references: [id], onDelete: Cascade)
+  checkedInBy       User?         @relation("CheckInStaff", fields: [checkedInByUserId], references: [id], onDelete: SetNull)
+
+  @@unique([attendeeId])
+  @@index([eventId, checkedInAt])
+}
+
+model RafflePrize {
+  id            String         @id @default(cuid())
+  eventId       String
+  sponsorId     String?
+  name          String
+  description   String?
+  quantity      Int            @default(1)
+  drawOrder     Int            @default(0)
+  event         Event          @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  sponsor       Sponsor?       @relation(fields: [sponsorId], references: [id], onDelete: SetNull)
+  draws         RaffleDraw[]
+  winners       RaffleWinner[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([eventId])
+}
+
+model RaffleDraw {
+  id              String           @id @default(cuid())
+  eventId         String
+  prizeId         String
+  status          RaffleDrawStatus @default(PENDING)
+  startedAt       DateTime?
+  completedAt     DateTime?
+  createdByUserId String?
+  event           Event            @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  prize           RafflePrize      @relation(fields: [prizeId], references: [id], onDelete: Cascade)
+  createdBy       User?            @relation("RaffleDrawCreator", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  winners         RaffleWinner[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@index([eventId])
+  @@index([prizeId])
+}
+
+model RaffleWinner {
+  id          String      @id @default(cuid())
+  eventId     String
+  drawId      String
+  prizeId     String
+  attendeeId  String
+  announcedAt DateTime?
+  event       Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  draw        RaffleDraw  @relation(fields: [drawId], references: [id], onDelete: Cascade)
+  prize       RafflePrize @relation(fields: [prizeId], references: [id], onDelete: Cascade)
+  attendee    Attendee    @relation(fields: [attendeeId], references: [id], onDelete: Cascade)
+  createdAt   DateTime    @default(now())
+
+  @@unique([eventId, attendeeId])
+  @@index([drawId])
+  @@index([prizeId])
+}
+
+model Sponsor {
+  id          String        @id @default(cuid())
+  eventId     String
+  name        String
+  tier        String?
+  websiteUrl  String?
+  logoUrl     String?
+  displayCopy String?
+  event       Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  prizes      RafflePrize[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@unique([eventId, name])
+  @@index([eventId])
+}
+
+model EventReport {
+  id                String            @id @default(cuid())
+  eventId           String
+  status            EventReportStatus @default(DRAFT)
+  title             String
+  markdown          String
+  structuredJson    Json
+  model             String?
+  promptVersion     String?
+  generatedByUserId String?
+  generatedAt       DateTime          @default(now())
+  event             Event             @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  generatedBy       User?             @relation("ReportGenerator", fields: [generatedByUserId], references: [id], onDelete: SetNull)
+  aiLogs            AiGenerationLog[]
+  updatedAt         DateTime          @updatedAt
+
+  @@index([eventId])
+}
+
+model AiGenerationLog {
+  id                   String             @id @default(cuid())
+  eventId              String
+  reportId             String?
+  feature              AiGenerationFeature
+  provider             String
+  model                String
+  promptVersion        String
+  inputTokenEstimate   Int?
+  outputTokenEstimate  Int?
+  status               AiGenerationStatus
+  errorMessage         String?
+  event                Event              @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  report               EventReport?       @relation(fields: [reportId], references: [id], onDelete: SetNull)
+  createdAt            DateTime           @default(now())
+
+  @@index([eventId])
+  @@index([reportId])
+}

@@ -1,0 +1,18 @@
+{
+  "name": "galagate",
+  "version": "0.2.0",
+  "private": true,
+  "packageManager": "pnpm@10.24.0",
+  "scripts": {
+    "dev": "pnpm --filter @galagate/web dev",
+    "build": "pnpm --filter @galagate/web build",
+    "start": "pnpm --filter @galagate/web start",
+    "lint": "pnpm --filter @galagate/web lint",
+    "typecheck": "pnpm --filter @galagate/web typecheck",
+    "db:generate": "pnpm --filter @galagate/web db:generate",
+    "db:migrate": "pnpm --filter @galagate/web db:migrate",
+    "db:push": "pnpm --filter @galagate/web db:push",
+    "db:seed": "pnpm --filter @galagate/web db:seed",
+    "db:studio": "pnpm --filter @galagate/web db:studio"
+  }
+}

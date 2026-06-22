@@ -1,26 +1,21 @@
-version: '3.8'
 services:
   postgres:
-    image: postgres
-    restart: always
+    image: postgres:16-alpine
+    container_name: galagate-postgres
+    restart: unless-stopped
     environment:
-      POSTGRES_PASSWORD: example
+      POSTGRES_USER: galagate
+      POSTGRES_PASSWORD: galagate
+      POSTGRES_DB: galagate
     ports:
-      - "5433:5433"
+      - "5432:5432"
+    volumes:
+      - galagate_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U galagate -d galagate"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
-  backend:
-    build: ./backend
-    ports:
-      - "8080:8080"
-    depends_on:
-      - postgres
-
-  checkin:
-    build: ./checkin
-    ports:
-      - "3000:3000"
-
-  lottery:
-    build: ./lottery
-    ports:
-      - "3001:3001"
+volumes:
+  galagate_postgres_data:
