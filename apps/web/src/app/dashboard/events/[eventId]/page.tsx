@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Settings } from "lucide-react";
+import { ClipboardCheck, Settings, Trophy, UsersRound } from "lucide-react";
 import { getEventForOrganization, requireCurrentOrganization } from "@/features/events/queries";
+import { RealtimeEventListener } from "@/features/realtime/realtime-event-listener";
 
 type EventDetailPageProps = {
   params: Promise<{
@@ -31,15 +32,47 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
             </Link>
             <h1 className="mt-3 text-4xl font-semibold text-zinc-950">{event.name}</h1>
             <p className="mt-2 text-sm text-zinc-500">{event.venue ?? "Venue not set"}</p>
+            <div className="mt-4">
+              <RealtimeEventListener eventId={event.id} />
+            </div>
           </div>
-          {context.permissions.canManageEvents ? (
-            <Link
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-zinc-300 bg-white px-4 text-sm font-medium text-zinc-950 hover:bg-zinc-100"
-              href={`/dashboard/events/${event.id}/settings`}
-            >
-              <Settings className="size-4" aria-hidden="true" />
-              Settings
-            </Link>
+          {context.permissions.canRunCheckIn ? (
+            <div className="flex flex-wrap gap-3">
+              <Link
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-zinc-950 px-4 text-sm font-medium text-white hover:bg-zinc-800"
+                href={`/dashboard/events/${event.id}/check-in`}
+              >
+                <ClipboardCheck className="size-4" aria-hidden="true" />
+                Check-in
+              </Link>
+              {context.permissions.canManageEvents ? (
+                <Link
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-zinc-300 bg-white px-4 text-sm font-medium text-zinc-950 hover:bg-zinc-100"
+                  href={`/dashboard/events/${event.id}/raffle`}
+                >
+                  <Trophy className="size-4" aria-hidden="true" />
+                  Raffle
+                </Link>
+              ) : null}
+              {context.permissions.canManageEvents ? (
+                <Link
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-zinc-300 bg-white px-4 text-sm font-medium text-zinc-950 hover:bg-zinc-100"
+                  href={`/dashboard/events/${event.id}/attendees`}
+                >
+                  <UsersRound className="size-4" aria-hidden="true" />
+                  Attendees
+                </Link>
+              ) : null}
+              {context.permissions.canManageEvents ? (
+                <Link
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-zinc-300 bg-white px-4 text-sm font-medium text-zinc-950 hover:bg-zinc-100"
+                  href={`/dashboard/events/${event.id}/settings`}
+                >
+                  <Settings className="size-4" aria-hidden="true" />
+                  Settings
+                </Link>
+              ) : null}
+            </div>
           ) : null}
         </div>
 

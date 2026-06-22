@@ -27,6 +27,13 @@ enum CheckInSource {
   MANUAL
 }
 
+enum AttendeeSource {
+  IMPORTED
+  MANUAL
+  WALK_IN
+  STAFF
+}
+
 enum RaffleDrawStatus {
   PENDING
   DRAWING
@@ -55,6 +62,7 @@ model User {
   email               String               @unique
   image               String?
   organizationMembers OrganizationMember[]
+  createdAttendees    Attendee[]           @relation("AttendeeCreator")
   checkInRecords      CheckInRecord[]      @relation("CheckInStaff")
   raffleDraws         RaffleDraw[]         @relation("RaffleDrawCreator")
   eventReports        EventReport[]        @relation("ReportGenerator")
@@ -116,15 +124,18 @@ model Event {
 model Attendee {
   id              String          @id @default(cuid())
   eventId         String
+  createdByUserId String?
   fullName        String
-  email           String
+  email           String?
   phone           String?
   ticketType      String          @default("General")
   ticketCode      String?
   lotteryNumber   Int?
   lotteryEligible Boolean         @default(true)
+  source          AttendeeSource  @default(IMPORTED)
   notes           String?
   event           Event           @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  createdBy       User?           @relation("AttendeeCreator", fields: [createdByUserId], references: [id], onDelete: SetNull)
   checkInRecords  CheckInRecord[]
   raffleWins      RaffleWinner[]
   createdAt       DateTime        @default(now())
@@ -134,6 +145,7 @@ model Attendee {
   @@unique([eventId, ticketCode])
   @@unique([eventId, lotteryNumber])
   @@index([eventId, fullName])
+  @@index([createdByUserId])
 }
 
 model CheckInRecord {

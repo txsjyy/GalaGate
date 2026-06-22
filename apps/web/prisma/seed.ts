@@ -71,6 +71,7 @@ async function main() {
       ticketCode: `GALA-${number.toString().padStart(4, "0")}`,
       lotteryNumber: number,
       lotteryEligible: index % 10 !== 0,
+      source: "IMPORTED" as const,
     };
   });
 

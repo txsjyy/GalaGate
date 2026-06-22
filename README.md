@@ -68,7 +68,7 @@ pnpm db:studio
 The local default database URL is:
 
 ```txt
-postgresql://galagate:galagate@localhost:5432/galagate
+postgresql://galagate:galagate@localhost:5433/galagate
 ```
 
 ## Environment
@@ -101,6 +101,52 @@ Event management routes:
 /dashboard/events/new
 /dashboard/events/[eventId]
 /dashboard/events/[eventId]/settings
+```
+
+Attendee management routes:
+
+```txt
+/dashboard/events/[eventId]/attendees
+/dashboard/events/[eventId]/attendees/new
+/dashboard/events/[eventId]/attendees/import
+/dashboard/events/[eventId]/attendees/export
+```
+
+Staff check-in route:
+
+```txt
+/dashboard/events/[eventId]/check-in
+/dashboard/events/[eventId]/check-in/walk-in
+```
+
+Walk-in guests can be created during staff check-in. A walk-in record creates an attendee with `source = WALK_IN` and immediately writes a check-in record. Email is optional for walk-ins if a phone number is provided.
+
+Realtime updates:
+
+- The local dev server runs through `apps/web/server.ts`.
+- Socket.IO clients join an event room by `eventId`.
+- Staff check-in writes to PostgreSQL first, then broadcasts `check-in:created`.
+- Event detail, attendees, and check-in pages refresh when a check-in event is received.
+
+Raffle routes:
+
+```txt
+/dashboard/events/[eventId]/raffle
+/dashboard/events/[eventId]/raffle/prizes/new
+```
+
+Raffle drawing uses checked-in attendees where `lotteryEligible = true` and excludes anyone who has already won a prize for the event.
+
+CSV import supports these headers:
+
+```txt
+fullName,email,phone,ticketType,ticketCode,lotteryNumber,lotteryEligible,notes
+```
+
+A demo CSV fixture is available at:
+
+```txt
+apps/web/prisma/fixtures/demo-attendees.csv
 ```
 
 Override credentials in `.env.local`:

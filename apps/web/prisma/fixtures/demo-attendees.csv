@@ -1,0 +1,5 @@
+fullName,email,phone,ticketType,ticketCode,lotteryNumber,lotteryEligible,notes
+Ada Chen,ada.chen@example.com,416-555-0101,General,DEMO-0001,201,true,Imported demo row
+Brian Li,brian.li@example.com,416-555-0102,VIP,DEMO-0002,202,true,VIP guest
+Chris Wang,chris.wang@example.com,416-555-0103,Sponsor Guest,DEMO-0003,203,true,Sponsor guest
+Dana Zhang,dana.zhang@example.com,416-555-0104,General,DEMO-0004,204,false,Not eligible for raffle
