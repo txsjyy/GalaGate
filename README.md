@@ -133,9 +133,22 @@ Raffle routes:
 ```txt
 /dashboard/events/[eventId]/raffle
 /dashboard/events/[eventId]/raffle/prizes/new
+/stage/[eventId]
 ```
 
 Raffle drawing uses checked-in attendees where `lotteryEligible = true` and excludes anyone who has already won a prize for the event.
+
+The stage display listens for `raffle:winner-drawn` events over Socket.IO and reveals the latest winner in fullscreen-friendly layout.
+
+Sponsor routes:
+
+```txt
+/dashboard/events/[eventId]/sponsors
+/dashboard/events/[eventId]/sponsors/new
+/dashboard/events/[eventId]/sponsors/[sponsorId]/edit
+```
+
+Sponsors can be linked to raffle prizes. The stage display shows active sponsor names, tiers, optional logos, and display copy.
 
 CSV import supports these headers:
 

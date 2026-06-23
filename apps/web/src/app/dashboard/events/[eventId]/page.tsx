@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ClipboardCheck, Settings, Trophy, UsersRound } from "lucide-react";
+import { ClipboardCheck, Handshake, Settings, Trophy, UsersRound } from "lucide-react";
 import { getEventForOrganization, requireCurrentOrganization } from "@/features/events/queries";
 import { RealtimeEventListener } from "@/features/realtime/realtime-event-listener";
 
@@ -61,6 +61,15 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                 >
                   <UsersRound className="size-4" aria-hidden="true" />
                   Attendees
+                </Link>
+              ) : null}
+              {context.permissions.canManageEvents ? (
+                <Link
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-zinc-300 bg-white px-4 text-sm font-medium text-zinc-950 hover:bg-zinc-100"
+                  href={`/dashboard/events/${event.id}/sponsors`}
+                >
+                  <Handshake className="size-4" aria-hidden="true" />
+                  Sponsors
                 </Link>
               ) : null}
               {context.permissions.canManageEvents ? (

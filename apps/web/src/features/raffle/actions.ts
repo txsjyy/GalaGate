@@ -8,6 +8,7 @@ import { authOptions } from "@/features/auth/auth-options";
 import { getEventForOrganization } from "@/features/events/queries";
 import { getCurrentOrganizationContext } from "@/features/organizations/current-organization";
 import { canManageEvents } from "@/features/organizations/permissions";
+import { emitRaffleWinnerDrawn } from "@/features/realtime/server";
 import { prisma } from "@/lib/db/prisma";
 import { parseRafflePrizeFormData } from "./validation";
 
@@ -51,6 +52,7 @@ export async function createRafflePrizeAction(eventId: string, formData: FormDat
         eventId,
         name: input.name,
         description: input.description,
+        sponsorId: input.sponsorId,
         quantity: input.quantity,
         drawOrder: input.drawOrder,
       },
@@ -65,10 +67,27 @@ export async function createRafflePrizeAction(eventId: string, formData: FormDat
 }
 
 export async function drawRafflePrizeAction(eventId: string, prizeId: string) {
+  let drawnWinner:
+    | {
+        prize: {
+          id: string;
+          name: string;
+        };
+        winner: {
+          id: string;
+          fullName: string;
+          email: string | null;
+          ticketCode: string | null;
+          lotteryNumber: number | null;
+        };
+        announcedAt: Date;
+      }
+    | undefined;
+
   try {
     const context = await requireRaffleManager(eventId);
 
-    await prisma.$transaction(async (tx) => {
+    drawnWinner = await prisma.$transaction(async (tx) => {
       const prize = await tx.rafflePrize.findFirst({
         where: {
           id: prizeId,
@@ -108,6 +127,10 @@ export async function drawRafflePrizeAction(eventId: string, prizeId: string) {
         },
         select: {
           id: true,
+          fullName: true,
+          email: true,
+          ticketCode: true,
+          lotteryNumber: true,
         },
       });
 
@@ -138,9 +161,27 @@ export async function drawRafflePrizeAction(eventId: string, prizeId: string) {
           announcedAt: now,
         },
       });
+
+      return {
+        prize: {
+          id: prize.id,
+          name: prize.name,
+        },
+        winner,
+        announcedAt: now,
+      };
     });
   } catch (error) {
     redirect(`/dashboard/events/${eventId}/raffle?error=${encodeURIComponent(getRaffleError(error))}`);
+  }
+
+  if (drawnWinner) {
+    emitRaffleWinnerDrawn({
+      eventId,
+      prize: drawnWinner.prize,
+      winner: drawnWinner.winner,
+      announcedAt: drawnWinner.announcedAt.toISOString(),
+    });
   }
 
   revalidatePath(`/dashboard/events/${eventId}`);

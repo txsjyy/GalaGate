@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Plus, Trophy } from "lucide-react";
+import { Monitor, Plus, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { drawRafflePrizeAction } from "@/features/raffle/actions";
 import { getRaffleDashboard } from "@/features/raffle/queries";
@@ -43,13 +43,23 @@ export default async function RafflePage({ params, searchParams }: RafflePagePro
             <h1 className="mt-3 text-4xl font-semibold text-zinc-950">Raffle control</h1>
             <p className="mt-2 text-sm text-zinc-500">{event.name}</p>
           </div>
-          <Link
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-zinc-950 px-4 text-sm font-medium text-white hover:bg-zinc-800"
-            href={`/dashboard/events/${event.id}/raffle/prizes/new`}
-          >
-            <Plus className="size-4" aria-hidden="true" />
-            New prize
-          </Link>
+          <div className="flex flex-wrap gap-3">
+            <Link
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-zinc-300 bg-white px-4 text-sm font-medium text-zinc-950 hover:bg-zinc-100"
+              href={`/stage/${event.id}`}
+              target="_blank"
+            >
+              <Monitor className="size-4" aria-hidden="true" />
+              Stage display
+            </Link>
+            <Link
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-zinc-950 px-4 text-sm font-medium text-white hover:bg-zinc-800"
+              href={`/dashboard/events/${event.id}/raffle/prizes/new`}
+            >
+              <Plus className="size-4" aria-hidden="true" />
+              New prize
+            </Link>
+          </div>
         </div>
 
         <div className="mt-8 grid gap-4 md:grid-cols-4">
