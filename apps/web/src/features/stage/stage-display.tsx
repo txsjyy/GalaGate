@@ -6,6 +6,7 @@ import { REALTIME_EVENTS, type RaffleWinnerDrawnPayload } from "@/features/realt
 
 type StageDisplayProps = {
   eventId: string;
+  stageToken: string;
   eventName: string;
   initialWinner?: RaffleWinnerDrawnPayload | null;
   sponsors: {
@@ -17,7 +18,7 @@ type StageDisplayProps = {
   }[];
 };
 
-export function StageDisplay({ eventId, eventName, initialWinner = null, sponsors }: StageDisplayProps) {
+export function StageDisplay({ eventId, stageToken, eventName, initialWinner = null, sponsors }: StageDisplayProps) {
   const [status, setStatus] = useState<"connecting" | "live" | "offline">("connecting");
   const [winner, setWinner] = useState<RaffleWinnerDrawnPayload | null>(initialWinner);
 
@@ -29,7 +30,7 @@ export function StageDisplay({ eventId, eventName, initialWinner = null, sponsor
 
     socket.on("connect", () => {
       setStatus("live");
-      socket.emit(REALTIME_EVENTS.JOIN_EVENT, eventId);
+      socket.emit(REALTIME_EVENTS.JOIN_EVENT, { eventId, token: stageToken, channel: "stage" });
     });
 
     socket.on("disconnect", () => {
@@ -49,7 +50,7 @@ export function StageDisplay({ eventId, eventName, initialWinner = null, sponsor
     return () => {
       socket.disconnect();
     };
-  }, [eventId]);
+  }, [eventId, stageToken]);
 
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
@@ -94,9 +95,6 @@ export function StageDisplay({ eventId, eventName, initialWinner = null, sponsor
                     <span className="rounded-md bg-amber-300 px-4 py-2 font-semibold text-amber-950">
                       Lottery #{winner.winner.lotteryNumber}
                     </span>
-                  ) : null}
-                  {winner.winner.ticketCode ? (
-                    <span className="rounded-md bg-white/10 px-4 py-2">{winner.winner.ticketCode}</span>
                   ) : null}
                 </div>
               </div>

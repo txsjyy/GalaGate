@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
+import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { authOptions } from "@/features/auth/auth-options";
 import { getCurrentOrganizationContext } from "@/features/organizations/current-organization";
@@ -56,6 +57,7 @@ export async function createEventAction(formData: FormData) {
         endsAt: input.endsAt ? toEventDate(input.endsAt) : null,
         timezone: input.timezone,
         status: input.status,
+        stageToken: randomUUID(),
       },
     });
 

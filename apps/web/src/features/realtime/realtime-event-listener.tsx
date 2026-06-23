@@ -7,9 +7,10 @@ import { REALTIME_EVENTS, type CheckInCreatedPayload } from "./events";
 
 type RealtimeEventListenerProps = {
   eventId: string;
+  stageToken: string;
 };
 
-export function RealtimeEventListener({ eventId }: RealtimeEventListenerProps) {
+export function RealtimeEventListener({ eventId, stageToken }: RealtimeEventListenerProps) {
   const router = useRouter();
   const [status, setStatus] = useState<"connecting" | "connected" | "offline">("connecting");
 
@@ -21,7 +22,7 @@ export function RealtimeEventListener({ eventId }: RealtimeEventListenerProps) {
 
     socket.on("connect", () => {
       setStatus("connected");
-      socket.emit(REALTIME_EVENTS.JOIN_EVENT, eventId);
+      socket.emit(REALTIME_EVENTS.JOIN_EVENT, { eventId, token: stageToken, channel: "dashboard" });
     });
 
     socket.on("disconnect", () => {
@@ -41,7 +42,7 @@ export function RealtimeEventListener({ eventId }: RealtimeEventListenerProps) {
     return () => {
       socket.disconnect();
     };
-  }, [eventId, router]);
+  }, [eventId, router, stageToken]);
 
   const label = {
     connecting: "Realtime connecting",

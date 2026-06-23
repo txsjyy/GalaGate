@@ -37,7 +37,7 @@ export default async function AttendeesPage({ params, searchParams }: AttendeesP
             <h1 className="mt-3 text-4xl font-semibold text-zinc-950">Attendees</h1>
             <p className="mt-2 text-sm text-zinc-500">{event.name}</p>
             <div className="mt-4">
-              <RealtimeEventListener eventId={event.id} />
+              <RealtimeEventListener eventId={event.id} stageToken={event.stageToken} />
             </div>
           </div>
           {context.permissions.canManageEvents ? (

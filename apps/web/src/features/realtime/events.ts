@@ -4,6 +4,12 @@ export const REALTIME_EVENTS = {
   RAFFLE_WINNER_DRAWN: "raffle:winner-drawn",
 } as const;
 
+export type JoinEventPayload = {
+  eventId: string;
+  token: string;
+  channel: "dashboard" | "stage";
+};
+
 export type CheckInCreatedPayload = {
   eventId: string;
   attendeeId: string;
@@ -19,13 +25,11 @@ export type RaffleWinnerDrawnPayload = {
   winner: {
     id: string;
     fullName: string;
-    email: string | null;
-    ticketCode: string | null;
     lotteryNumber: number | null;
   };
   announcedAt: string;
 };
 
-export function getEventRoom(eventId: string) {
-  return `event:${eventId}`;
+export function getEventRoom(eventId: string, channel: JoinEventPayload["channel"]) {
+  return `event:${eventId}:${channel}`;
 }

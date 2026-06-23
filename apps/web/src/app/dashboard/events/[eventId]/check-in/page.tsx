@@ -45,7 +45,7 @@ export default async function CheckInPage({ params, searchParams }: CheckInPageP
             <h1 className="mt-3 text-3xl font-semibold text-zinc-950 sm:text-4xl">Staff check-in</h1>
             <p className="mt-2 text-sm text-zinc-500">{event.name}</p>
             <div className="mt-4">
-              <RealtimeEventListener eventId={event.id} />
+              <RealtimeEventListener eventId={event.id} stageToken={event.stageToken} />
             </div>
           </div>
           <div className="rounded-md border border-zinc-200 bg-white px-4 py-3 text-sm shadow-sm">

@@ -38,6 +38,7 @@ async function main() {
     },
     update: {
       status: "ACTIVE",
+      nextLotteryNumber: 121,
     },
     create: {
       organizationId: organization.id,
@@ -49,6 +50,8 @@ async function main() {
       endsAt: new Date("2024-02-10T22:00:00-05:00"),
       timezone: "America/Toronto",
       status: "ACTIVE",
+      stageToken: "demo-stage-token",
+      nextLotteryNumber: 121,
     },
   });
 

@@ -7,15 +7,25 @@ type StagePageProps = {
   params: Promise<{
     eventId: string;
   }>;
+  searchParams: Promise<{
+    token?: string;
+  }>;
 };
 
-export default async function StagePage({ params }: StagePageProps) {
+export default async function StagePage({ params, searchParams }: StagePageProps) {
   const { eventId } = await params;
-  const event = await prisma.event.findUnique({
-    where: { id: eventId },
+  const { token } = await searchParams;
+
+  if (!token) {
+    notFound();
+  }
+
+  const event = await prisma.event.findFirst({
+    where: { id: eventId, stageToken: token },
     select: {
       id: true,
       name: true,
+      stageToken: true,
       raffleWinners: {
         orderBy: { createdAt: "desc" },
         take: 1,
@@ -31,8 +41,6 @@ export default async function StagePage({ params }: StagePageProps) {
             select: {
               id: true,
               fullName: true,
-              email: true,
-              ticketCode: true,
               lotteryNumber: true,
             },
           },
@@ -66,6 +74,12 @@ export default async function StagePage({ params }: StagePageProps) {
     : null;
 
   return (
-    <StageDisplay eventId={event.id} eventName={event.name} initialWinner={initialWinner} sponsors={event.sponsors} />
+    <StageDisplay
+      eventId={event.id}
+      stageToken={event.stageToken}
+      eventName={event.name}
+      initialWinner={initialWinner}
+      sponsors={event.sponsors}
+    />
   );
 }

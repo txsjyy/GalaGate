@@ -46,13 +46,32 @@ export async function createRafflePrizeAction(eventId: string, formData: FormDat
   try {
     await requireRaffleManager(eventId);
     const input = parseRafflePrizeFormData(formData);
+    const sponsorId = input.sponsorId
+      ? await prisma.sponsor
+          .findFirst({
+            where: {
+              id: input.sponsorId,
+              eventId,
+            },
+            select: {
+              id: true,
+            },
+          })
+          .then((sponsor) => {
+            if (!sponsor) {
+              throw new Error("Sponsor not found for this event.");
+            }
+
+            return sponsor.id;
+          })
+      : null;
 
     await prisma.rafflePrize.create({
       data: {
         eventId,
         name: input.name,
         description: input.description,
-        sponsorId: input.sponsorId,
+        sponsorId,
         quantity: input.quantity,
         drawOrder: input.drawOrder,
       },
@@ -76,8 +95,6 @@ export async function drawRafflePrizeAction(eventId: string, prizeId: string) {
         winner: {
           id: string;
           fullName: string;
-          email: string | null;
-          ticketCode: string | null;
           lotteryNumber: number | null;
         };
         announcedAt: Date;
@@ -128,8 +145,6 @@ export async function drawRafflePrizeAction(eventId: string, prizeId: string) {
         select: {
           id: true,
           fullName: true,
-          email: true,
-          ticketCode: true,
           lotteryNumber: true,
         },
       });

@@ -33,7 +33,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
             <h1 className="mt-3 text-4xl font-semibold text-zinc-950">{event.name}</h1>
             <p className="mt-2 text-sm text-zinc-500">{event.venue ?? "Venue not set"}</p>
             <div className="mt-4">
-              <RealtimeEventListener eventId={event.id} />
+              <RealtimeEventListener eventId={event.id} stageToken={event.stageToken} />
             </div>
           </div>
           {context.permissions.canRunCheckIn ? (

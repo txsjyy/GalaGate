@@ -139,6 +139,7 @@ Raffle routes:
 Raffle drawing uses checked-in attendees where `lotteryEligible = true` and excludes anyone who has already won a prize for the event.
 
 The stage display listens for `raffle:winner-drawn` events over Socket.IO and reveals the latest winner in fullscreen-friendly layout.
+Stage display access requires the event `stageToken`; use the `Stage display` link from the raffle control page instead of opening the stage route manually.
 
 Sponsor routes:
 

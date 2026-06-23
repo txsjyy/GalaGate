@@ -1,7 +1,8 @@
 import { createServer } from "node:http";
 import next from "next";
 import { Server } from "socket.io";
-import { getEventRoom, REALTIME_EVENTS } from "./src/features/realtime/events";
+import { PrismaClient } from "@prisma/client";
+import { getEventRoom, REALTIME_EVENTS, type JoinEventPayload } from "./src/features/realtime/events";
 import { setRealtimeServer } from "./src/features/realtime/server";
 
 const dev = process.env.NODE_ENV !== "production";
@@ -10,6 +11,7 @@ const port = Number(process.env.PORT ?? 3000);
 
 const app = next({ dev, hostname, port });
 const handle = app.getRequestHandler();
+const prisma = new PrismaClient();
 
 void app.prepare().then(() => {
   const httpServer = createServer((request, response) => {
@@ -24,9 +26,23 @@ void app.prepare().then(() => {
   });
 
   io.on("connection", (socket) => {
-    socket.on(REALTIME_EVENTS.JOIN_EVENT, (eventId: string) => {
-      if (eventId) {
-        void socket.join(getEventRoom(eventId));
+    socket.on(REALTIME_EVENTS.JOIN_EVENT, async (payload: JoinEventPayload) => {
+      if (!payload?.eventId || !payload.token || !["dashboard", "stage"].includes(payload.channel)) {
+        return;
+      }
+
+      const event = await prisma.event.findFirst({
+        where: {
+          id: payload.eventId,
+          stageToken: payload.token,
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      if (event) {
+        void socket.join(getEventRoom(event.id, payload.channel));
       }
     });
   });

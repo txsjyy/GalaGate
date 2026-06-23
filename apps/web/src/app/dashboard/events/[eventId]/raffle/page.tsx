@@ -46,7 +46,7 @@ export default async function RafflePage({ params, searchParams }: RafflePagePro
           <div className="flex flex-wrap gap-3">
             <Link
               className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-zinc-300 bg-white px-4 text-sm font-medium text-zinc-950 hover:bg-zinc-100"
-              href={`/stage/${event.id}`}
+              href={`/stage/${event.id}?token=${event.stageToken}`}
               target="_blank"
             >
               <Monitor className="size-4" aria-hidden="true" />

@@ -111,21 +111,38 @@ export async function saveReportAction(eventId: string, reportId: string, formDa
     await requireReportManager(eventId);
     const input = parseReportEditFormData(formData);
 
-    const result = await prisma.eventReport.updateMany({
+    const report = await prisma.eventReport.findFirst({
       where: {
         id: reportId,
         eventId,
+      },
+      select: {
+        id: true,
+        structuredJson: true,
+      },
+    });
+
+    if (!report) {
+      throw new Error("Report not found.");
+    }
+
+    await prisma.eventReport.update({
+      where: {
+        id: report.id,
       },
       data: {
         title: input.title,
         markdown: input.markdown,
         status: "SAVED",
+        structuredJson: {
+          edited: true,
+          originalStructuredJson: report.structuredJson,
+          savedTitle: input.title,
+          savedMarkdown: input.markdown,
+          savedAt: new Date().toISOString(),
+        },
       },
     });
-
-    if (result.count === 0) {
-      throw new Error("Report not found.");
-    }
   } catch (error) {
     redirect(
       `/dashboard/events/${eventId}/reports/${reportId}?error=${encodeURIComponent(getReportError(error))}`,

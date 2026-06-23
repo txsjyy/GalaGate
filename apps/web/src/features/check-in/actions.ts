@@ -90,22 +90,23 @@ export async function createWalkInCheckInAction(eventId: string, formData: FormD
     const input = parseWalkInFormData(formData);
 
     const result = await prisma.$transaction(async (tx) => {
-      const latestLottery = await tx.attendee.findFirst({
-        where: {
-          eventId,
-          lotteryNumber: {
-            not: null,
-          },
-        },
-        orderBy: {
-          lotteryNumber: "desc",
-        },
-        select: {
-          lotteryNumber: true,
-        },
-      });
-
-      const lotteryNumber = input.lotteryEligible ? (latestLottery?.lotteryNumber ?? 0) + 1 : null;
+      const lotteryNumber = input.lotteryEligible
+        ? (
+            await tx.event.update({
+              where: {
+                id: eventId,
+              },
+              data: {
+                nextLotteryNumber: {
+                  increment: 1,
+                },
+              },
+              select: {
+                nextLotteryNumber: true,
+              },
+            })
+          ).nextLotteryNumber - 1
+        : null;
 
       const attendee = await tx.attendee.create({
         data: {
