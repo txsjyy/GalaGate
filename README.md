@@ -79,7 +79,7 @@ Copy `.env.example` to `.env.local` before running database or auth flows locall
 cp .env.example .env.local
 ```
 
-AI Event Recap Report is planned for PR 12.
+AI Event Recap Report uses the OpenAI Responses API. Set `OPENAI_API_KEY` before generating reports.
 
 ## Development Login
 
@@ -150,6 +150,24 @@ Sponsor routes:
 
 Sponsors can be linked to raffle prizes. The stage display shows active sponsor names, tiers, optional logos, and display copy.
 
+Analytics route:
+
+```txt
+/dashboard/events/[eventId]/analytics
+```
+
+Analytics are computed from database aggregations and summarize attendance, check-in timeline, ticket type distribution, raffle activity, sponsors, and attendee sources. The same aggregation service is designed to feed the AI Event Recap Report input.
+
+AI Event Recap Report routes:
+
+```txt
+/dashboard/events/[eventId]/reports
+/dashboard/events/[eventId]/reports/new
+/dashboard/events/[eventId]/reports/[reportId]
+```
+
+Recap generation uses structured output validation. The model receives aggregated event analytics only, saves the generated report as `DRAFT`, and lets the organizer review and edit markdown before saving the report as `SAVED`. Failed generations are logged in `AiGenerationLog` without creating a broken report.
+
 CSV import supports these headers:
 
 ```txt
@@ -171,4 +189,4 @@ DEV_AUTH_EMAIL="junyu@example.com"
 DEV_AUTH_PASSWORD="galagate-dev"
 ```
 
-AI Event Recap Report is planned for PR 12.
+Set `OPENAI_API_KEY` before using AI Event Recap Report generation.

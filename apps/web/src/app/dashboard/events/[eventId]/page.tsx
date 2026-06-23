@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ClipboardCheck, Handshake, Settings, Trophy, UsersRound } from "lucide-react";
+import { BarChart3, ClipboardCheck, FileText, Handshake, Settings, Trophy, UsersRound } from "lucide-react";
 import { getEventForOrganization, requireCurrentOrganization } from "@/features/events/queries";
 import { RealtimeEventListener } from "@/features/realtime/realtime-event-listener";
 
@@ -70,6 +70,24 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                 >
                   <Handshake className="size-4" aria-hidden="true" />
                   Sponsors
+                </Link>
+              ) : null}
+              {context.permissions.canManageEvents ? (
+                <Link
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-zinc-300 bg-white px-4 text-sm font-medium text-zinc-950 hover:bg-zinc-100"
+                  href={`/dashboard/events/${event.id}/analytics`}
+                >
+                  <BarChart3 className="size-4" aria-hidden="true" />
+                  Analytics
+                </Link>
+              ) : null}
+              {context.permissions.canManageEvents ? (
+                <Link
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-zinc-300 bg-white px-4 text-sm font-medium text-zinc-950 hover:bg-zinc-100"
+                  href={`/dashboard/events/${event.id}/reports`}
+                >
+                  <FileText className="size-4" aria-hidden="true" />
+                  Reports
                 </Link>
               ) : null}
               {context.permissions.canManageEvents ? (
