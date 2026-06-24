@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Monitor, Plus, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { drawRafflePrizeAction } from "@/features/raffle/actions";
+import { drawRafflePrizeAction, showRafflePrizeOnStageAction } from "@/features/raffle/actions";
 import { getRaffleDashboard } from "@/features/raffle/queries";
 import { getEventForOrganization, requireCurrentOrganization } from "@/features/events/queries";
 
@@ -13,13 +13,14 @@ type RafflePageProps = {
   searchParams: Promise<{
     error?: string;
     success?: string;
+    stage?: string;
   }>;
 };
 
 export default async function RafflePage({ params, searchParams }: RafflePageProps) {
   const context = await requireCurrentOrganization();
   const { eventId } = await params;
-  const { error, success } = await searchParams;
+  const { error, success, stage } = await searchParams;
 
   if (!context) {
     redirect("/dashboard");
@@ -77,12 +78,18 @@ export default async function RafflePage({ params, searchParams }: RafflePagePro
             Winner drawn and saved.
           </div>
         ) : null}
+        {stage ? (
+          <div className="mt-6 rounded-md border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
+            Prize pushed to stage display.
+          </div>
+        ) : null}
 
         <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_420px]">
           <section className="space-y-4">
             {raffle.prizes.map((prize) => {
               const remaining = prize.quantity - prize._count.winners;
               const draw = drawRafflePrizeAction.bind(null, event.id, prize.id);
+              const showOnStage = showRafflePrizeOnStageAction.bind(null, event.id, prize.id);
 
               return (
                 <article key={prize.id} className="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
@@ -109,11 +116,18 @@ export default async function RafflePage({ params, searchParams }: RafflePagePro
                         ) : null}
                       </div>
                     </div>
-                    <form action={draw}>
-                      <Button type="submit" disabled={remaining <= 0 || raffle.availableCandidateCount <= 0}>
-                        Draw winner
-                      </Button>
-                    </form>
+                    <div className="flex flex-wrap gap-2">
+                      <form action={showOnStage}>
+                        <Button type="submit" variant="outline">
+                          Show on stage
+                        </Button>
+                      </form>
+                      <form action={draw}>
+                        <Button type="submit" disabled={remaining <= 0 || raffle.availableCandidateCount <= 0}>
+                          Draw winner
+                        </Button>
+                      </form>
+                    </div>
                   </div>
                 </article>
               );

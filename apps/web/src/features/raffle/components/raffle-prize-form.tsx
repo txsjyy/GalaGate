@@ -52,7 +52,7 @@ export function RafflePrizeForm({ action, error, sponsors }: RafflePrizeFormProp
 
       <div className="grid gap-5 sm:grid-cols-2">
         <label className="block">
-          <span className="text-sm font-medium text-zinc-700">Quantity</span>
+          <span className="text-sm font-medium text-zinc-700">Draw wheels / winners</span>
           <input
             className="mt-2 h-11 w-full rounded-md border border-zinc-300 px-3 text-sm outline-none focus:border-zinc-950"
             name="quantity"
@@ -61,6 +61,7 @@ export function RafflePrizeForm({ action, error, sponsors }: RafflePrizeFormProp
             defaultValue={1}
             required
           />
+          <span className="mt-1 block text-xs text-zinc-500">Stage display shows this many rolling slots.</span>
         </label>
         <label className="block">
           <span className="text-sm font-medium text-zinc-700">Draw order</span>

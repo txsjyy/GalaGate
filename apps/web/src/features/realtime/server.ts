@@ -3,6 +3,7 @@ import {
   getEventRoom,
   REALTIME_EVENTS,
   type CheckInCreatedPayload,
+  type RafflePrizeShownPayload,
   type RaffleWinnerDrawnPayload,
 } from "./events";
 
@@ -24,4 +25,10 @@ export function emitRaffleWinnerDrawn(payload: RaffleWinnerDrawnPayload) {
   globalForRealtime.galagateIo
     ?.to(getEventRoom(payload.eventId, "stage"))
     .emit(REALTIME_EVENTS.RAFFLE_WINNER_DRAWN, payload);
+}
+
+export function emitRafflePrizeShown(payload: RafflePrizeShownPayload) {
+  globalForRealtime.galagateIo
+    ?.to(getEventRoom(payload.eventId, "stage"))
+    .emit(REALTIME_EVENTS.RAFFLE_PRIZE_SHOWN, payload);
 }

@@ -8,7 +8,7 @@ import { authOptions } from "@/features/auth/auth-options";
 import { getEventForOrganization } from "@/features/events/queries";
 import { getCurrentOrganizationContext } from "@/features/organizations/current-organization";
 import { canManageEvents } from "@/features/organizations/permissions";
-import { emitRaffleWinnerDrawn } from "@/features/realtime/server";
+import { emitRafflePrizeShown, emitRaffleWinnerDrawn } from "@/features/realtime/server";
 import { prisma } from "@/lib/db/prisma";
 import { parseRafflePrizeFormData } from "./validation";
 
@@ -40,6 +40,54 @@ function getRaffleError(error: unknown) {
   }
 
   return "Unable to complete raffle action.";
+}
+
+async function getStagePrizePayload(eventId: string, prizeId: string) {
+  const prize = await prisma.rafflePrize.findFirst({
+    where: {
+      id: prizeId,
+      eventId,
+    },
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      quantity: true,
+      sponsor: {
+        select: {
+          name: true,
+          tier: true,
+        },
+      },
+      winners: {
+        orderBy: { createdAt: "asc" },
+        select: {
+          attendee: {
+            select: {
+              id: true,
+              fullName: true,
+              lotteryNumber: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!prize) {
+    throw new Error("Prize not found.");
+  }
+
+  return {
+    prize: {
+      id: prize.id,
+      name: prize.name,
+      description: prize.description,
+      quantity: prize.quantity,
+      sponsor: prize.sponsor,
+    },
+    prizeWinners: prize.winners.map((record) => record.attendee),
+  };
 }
 
 export async function createRafflePrizeAction(eventId: string, formData: FormData) {
@@ -91,12 +139,23 @@ export async function drawRafflePrizeAction(eventId: string, prizeId: string) {
         prize: {
           id: string;
           name: string;
+          description: string | null;
+          quantity: number;
+          sponsor: {
+            name: string;
+            tier: string | null;
+          } | null;
         };
         winner: {
           id: string;
           fullName: string;
           lotteryNumber: number | null;
         };
+        prizeWinners: {
+          id: string;
+          fullName: string;
+          lotteryNumber: number | null;
+        }[];
         announcedAt: Date;
       }
     | undefined;
@@ -111,6 +170,12 @@ export async function drawRafflePrizeAction(eventId: string, prizeId: string) {
           eventId,
         },
         include: {
+          sponsor: {
+            select: {
+              name: true,
+              tier: true,
+            },
+          },
           _count: {
             select: {
               winners: true,
@@ -177,12 +242,33 @@ export async function drawRafflePrizeAction(eventId: string, prizeId: string) {
         },
       });
 
+      const prizeWinners = await tx.raffleWinner.findMany({
+        where: {
+          eventId,
+          prizeId,
+        },
+        orderBy: { createdAt: "asc" },
+        select: {
+          attendee: {
+            select: {
+              id: true,
+              fullName: true,
+              lotteryNumber: true,
+            },
+          },
+        },
+      });
+
       return {
         prize: {
           id: prize.id,
           name: prize.name,
+          description: prize.description,
+          quantity: prize.quantity,
+          sponsor: prize.sponsor,
         },
         winner,
+        prizeWinners: prizeWinners.map((record) => record.attendee),
         announcedAt: now,
       };
     });
@@ -195,6 +281,7 @@ export async function drawRafflePrizeAction(eventId: string, prizeId: string) {
       eventId,
       prize: drawnWinner.prize,
       winner: drawnWinner.winner,
+      prizeWinners: drawnWinner.prizeWinners,
       announcedAt: drawnWinner.announcedAt.toISOString(),
     });
   }
@@ -202,4 +289,22 @@ export async function drawRafflePrizeAction(eventId: string, prizeId: string) {
   revalidatePath(`/dashboard/events/${eventId}`);
   revalidatePath(`/dashboard/events/${eventId}/raffle`);
   redirect(`/dashboard/events/${eventId}/raffle?success=1`);
+}
+
+export async function showRafflePrizeOnStageAction(eventId: string, prizeId: string) {
+  try {
+    await requireRaffleManager(eventId);
+    const payload = await getStagePrizePayload(eventId, prizeId);
+
+    emitRafflePrizeShown({
+      eventId,
+      prize: payload.prize,
+      prizeWinners: payload.prizeWinners,
+      shownAt: new Date().toISOString(),
+    });
+  } catch (error) {
+    redirect(`/dashboard/events/${eventId}/raffle?error=${encodeURIComponent(getRaffleError(error))}`);
+  }
+
+  redirect(`/dashboard/events/${eventId}/raffle?stage=1`);
 }
